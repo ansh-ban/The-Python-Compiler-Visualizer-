@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Python Compiler Visualizer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    textarea, .CodeMirror {
+      width: 100%;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #0f0;
+      padding: 10px;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .tooltip {
+      border-bottom: 1px dotted #00f;
+      cursor: help;
+    }
+    .ast-tree div {
+      margin-left: 20px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🧠 Python Compiler Visualizer</h1>
+
+<div class="section">
+  <form method="post">
+    <label>📝 Enter Python Code:</label><br>
+    <textarea id="code" name="code">{{ code }}</textarea><br><br>
+    <button type="submit">Compile & Execute</button>
+  </form>
+</div>
+
+{% if tokens %}
+<div class="section">
+  <h2>🧬 Lexical Analysis (Tokens):</h2>
+  <pre>{{ tokens }}</pre>
+</div>
+{% endif %}
+
+{% if ast_output %}
+<div class="section">
+  <h2>🌲 Syntax Analysis (AST):</h2>
+  <pre>{{ ast_output }}</pre>
+</div>
+<div class="section">
+  <h3>📊 Parse Tree:</h3>
+  <div class="ast-tree">{{ ast_html|safe }}</div>
+</div>
+{% endif %}
+
+{% if semantic_output %}
+<div class="section">
+  <h2>🧠 Semantic Analysis:</h2>
+  <pre>{{ semantic_output }}</pre>
+</div>
+{% endif %}
+
+{% if intermediate_code %}
+<div class="section">
+  <h2>⚙️ Intermediate Code (TAC):</h2>
+  <pre>{{ intermediate_code }}</pre>
+</div>
+{% endif %}
+
+{% if optimized_code %}
+<div class="section">
+  <h2>🔧 Optimized Code:</h2>
+  <pre>{{ optimized_code }}</pre>
+</div>
+{% endif %}
+
+{% if bytecode %}
+<div class="section">
+  <h2>⚙️ Bytecode:</h2>
+  <pre>
+  {% set tooltips = {
+    'LOAD_FAST': 'Load local variable onto stack',
+    'STORE_FAST': 'Store top of stack into local variable',
+    'CALL_FUNCTION': 'Call function with arguments',
+    'RETURN_VALUE': 'Return from function',
+    'LOAD_CONST': 'Load constant onto stack',
+    'POP_TOP': 'Remove top of stack'
+  } %}
+  {% for line in bytecode.splitlines() %}
+    {% for key, tip in tooltips.items() %}
+      {% set line = line.replace(key, '<span class="tooltip" title="' ~ tip ~ '">' ~ key ~ '</span>') %}
+    {% endfor %}
+    {{ line | safe }}<br>
+  {% endfor %}
+  </pre>
+
+  <form method="post" action="/download">
+    <input type="hidden" name="code" value="{{ code }}">
+    <input type="hidden" name="bytecode" value="{{ bytecode }}">
+    <button type="submit">📥 Download Bytecode</button>
+  </form>
+</div>
+{% endif %}
+
+{% if output %}
+<div class="section">
+  <h2>🖨️ Execution Output:</h2>
+  <pre>{{ output }}</pre>
+</div>
+{% endif %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+<script>
+  const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    lineNumbers: true,
+    mode: "python",
+    theme: "default"
+  });
+</script>
+
+</body>
+</html>
